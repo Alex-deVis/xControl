@@ -2,6 +2,7 @@ import numpy as np
 
 from .display import Display
 from .geometry import Frame, Offset, Point, RelativeFrame
+from .ocr import OCR, OCR_SPEC, PSM
 from .screen import Click, Screen
 
 
@@ -12,6 +13,7 @@ class XControl:
     def __init__(self, displayId: str, width: int, height: int) -> None:
         self.display: Display = Display(displayId, width, height)
         self.screen: Screen = Screen(self.display)
+        self.ocr: OCR = OCR()
 
     @classmethod
     def config(cls, uniqueDisplay: bool = False):
@@ -203,6 +205,54 @@ class XControl:
             - The confidence level must be between 0 and 1.
         """
         self.screen.wait_for_image_to_disappear(imagePath, frame, confidence, timeout)
+
+    def extract_text(
+        self,
+        frame: Frame,
+        spec: OCR_SPEC,
+        preview: bool = False,
+        prepare_image: callable = None,
+    ) -> str:
+        """
+        Extracts text from the specified frame using a given OCR specification.
+
+        Args:
+            - frame (Frame): The frame to extract text from.
+            - spec (OCR_SPEC): The OCR specification to be used for text extraction.
+            - preview (bool, optional): Whether to preview the processed image before text extraction.
+            - prepare_image (callable, optional): A custom image processing function to be used before text extraction.
+                This function should accept a single argument, which is the input image as a NumPy array, and return a
+                black and white image. If no custom function is provided, the default image processing function will be used.
+
+        Returns:
+            - str: The extracted text.
+        """
+        img = self.screenshot(frame)
+        return self.ocr.extract_text(img, spec, preview, prepare_image)
+
+    def extract_text_from_image(
+        self,
+        img: np.ndarray,
+        spec: OCR_SPEC,
+        preview: bool = False,
+        prepare_image: callable = None,
+    ) -> str:
+        """
+        Extracts text from the specified frame using a given OCR specification.
+        Same as `extract_text()` but takes an image as input instead of a frame.
+
+        Args:
+            - frame (Frame): The frame to extract text from.
+            - spec (OCR_SPEC): The OCR specification to be used for text extraction.
+            - preview (bool, optional): Whether to preview the processed image before text extraction.
+            - prepare_image (callable, optional): A custom image processing function to be used before text extraction.
+                This function should accept a single argument, which is the input image as a NumPy array, and return a
+                black and white image. If no custom function is provided, the default image processing function will be used.
+
+        Returns:
+            - str: The extracted text.
+        """
+        return self.ocr.extract_text(img, spec, preview, prepare_image)
 
     def run_command(self, cmd: str, waitFor: bool = False) -> str:
         """

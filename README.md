@@ -49,3 +49,20 @@ xc.launch("subl")
 xc.type("!dlroW ,olleH")
 xc.key("Return")
 ```
+
+### Extract Text From The Screen
+
+```python
+import time
+from xControl import XControl, Frame, Point, OCR_SPEC, PSM
+
+xc: XControl = XControl.get_instance(f":15", 1024, 768)
+xc.launch("subl")
+# Wait for the application to start
+time.sleep(1)
+xc.type("Hello world!")
+
+# Capture the top-left corner of the screen
+spec = OCR_SPEC(PSM.SINGLE_LINE, [0, 0, 0], [10, 10, 10])
+txt = xc.extract_text(Frame(Point(0, 40), 200, 200), spec, preview=True)
+```
